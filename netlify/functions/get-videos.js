@@ -1,13 +1,10 @@
 // netlify/functions/get-videos.js
-// This runs on Netlify's server, not in the browser.
-// The Vimeo token below is read from an environment variable
-// you set in the Netlify dashboard — it never appears in your
-// GitHub repository or in the page source seen by visitors.
+// Fetches all folders and groups videos by folder name.
+// Requires a Vimeo token with "private" scope (folders are
+// a private organizational feature, not public data).
 
 exports.handler = async function (event, context) {
   const VIMEO_TOKEN = process.env.VIMEO_TOKEN;
-  const VIMEO_USER_ID = "262005074";
-  const PER_PAGE = 25;
 
   if (!VIMEO_TOKEN) {
     return {
@@ -16,38 +13,85 @@ exports.handler = async function (event, context) {
     };
   }
 
+  const headers = {
+    Authorization: `bearer ${VIMEO_TOKEN}`,
+    "Content-Type": "application/json"
+  };
+
   try {
-    const res = await fetch(
-      `https://api.vimeo.com/users/${VIMEO_USER_ID}/videos?per_page=${PER_PAGE}&sort=date&direction=desc`,
-      {
-        headers: {
-          Authorization: `bearer ${VIMEO_TOKEN}`,
-          "Content-Type": "application/json"
-        }
-      }
+    const foldersRes = await fetch(
+      "https://api.vimeo.com/me/folders?per_page=50",
+      { headers }
     );
 
-    if (!res.ok) {
+    if (!foldersRes.ok) {
       return {
-        statusCode: res.status,
-        body: JSON.stringify({ error: `Vimeo API error: ${res.status}` })
+        statusCode: foldersRes.status,
+        body: JSON.stringify({ error: `Vimeo folders error: ${foldersRes.status}` })
       };
     }
 
-    const data = await res.json();
+    const foldersData = await foldersRes.json();
+    const folders = foldersData.data || [];
 
-    const simplified = (data.data || []).map((video) => ({
-      id: video.uri.split("/").pop(),
-      name: video.name,
-      description: video.description,
-      width: video.width,
-      height: video.height
-    }));
+    const categories = [];
+    const categorizedIds = new Set();
+
+    for (const folder of folders) {
+      const videosUri = folder.metadata?.connections?.videos?.uri;
+      if (!videosUri) continue;
+
+      const videosRes = await fetch(
+        `https://api.vimeo.com${videosUri}?per_page=50`,
+        { headers }
+      );
+
+      if (!videosRes.ok) continue;
+
+      const videosData = await videosRes.json();
+      const videos = (videosData.data || []).map((video) => {
+        const id = video.uri.split("/").pop();
+        categorizedIds.add(id);
+        return {
+          id,
+          name: video.name,
+          description: video.description,
+          width: video.width,
+          height: video.height
+        };
+      });
+
+      if (videos.length > 0) {
+        categories.push({ name: folder.name, videos });
+      }
+    }
+
+    const allVideosRes = await fetch(
+      "https://api.vimeo.com/me/videos?per_page=50&sort=date&direction=desc",
+      { headers }
+    );
+
+    if (allVideosRes.ok) {
+      const allVideosData = await allVideosRes.json();
+      const uncategorized = (allVideosData.data || [])
+        .filter((video) => !categorizedIds.has(video.uri.split("/").pop()))
+        .map((video) => ({
+          id: video.uri.split("/").pop(),
+          name: video.name,
+          description: video.description,
+          width: video.width,
+          height: video.height
+        }));
+
+      if (uncategorized.length > 0) {
+        categories.push({ name: "Other", videos: uncategorized });
+      }
+    }
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videos: simplified })
+      body: JSON.stringify({ categories })
     };
   } catch (err) {
     return {
