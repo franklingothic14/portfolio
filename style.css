@@ -92,9 +92,10 @@ nav a:hover {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
-  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-auto-rows: 8px;
+  grid-auto-flow: dense;
+  gap: 24px;
 }
 
 .loading-msg {
@@ -113,6 +114,7 @@ nav a:hover {
     10px 10px 20px rgba(180, 172, 152, 0.45),
     -10px -10px 20px rgba(255, 255, 255, 0.8);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  align-self: start;
 }
 
 .project-card:hover {
@@ -128,18 +130,6 @@ nav a:hover {
   margin: 12px;
   border-radius: 16px;
   overflow: hidden;
-}
-
-.video-wrap.aspect-169 {
-  padding-top: 56.25%;
-}
-
-.video-wrap.aspect-11 {
-  padding-top: 100%;
-}
-
-.video-wrap.aspect-916 {
-  padding-top: 177.78%;
 }
 
 .video-wrap iframe {
@@ -216,9 +206,6 @@ nav a:hover {
 }
 
 @media (max-width: 700px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
   .hero h2 {
     font-size: 1.5rem;
   }
