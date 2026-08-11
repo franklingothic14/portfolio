@@ -2,7 +2,7 @@ async function loadPortfolioVideos() {
   const grid = document.getElementById("work-grid");
 
   try {
-    const res = await fetch("/api/videos");
+    const res = await fetch("/.netlify/functions/get-videos");
 
     if (!res.ok) {
       throw new Error(`Server error: ${res.status}`);
@@ -22,14 +22,7 @@ async function loadPortfolioVideos() {
       const videoId = video.id;
       const width = video.width || 16;
       const height = video.height || 9;
-      const ratio = width / height;
-
-      let aspectClass = "aspect-169";
-      if (Math.abs(ratio - 1) < 0.1) {
-        aspectClass = "aspect-11";
-      } else if (ratio < 0.9) {
-        aspectClass = "aspect-916";
-      }
+      const paddingTop = (height / width) * 100;
 
       const title = video.name || "Untitled project";
       const description = video.description
@@ -39,7 +32,7 @@ async function loadPortfolioVideos() {
       const card = document.createElement("article");
       card.className = "project-card";
       card.innerHTML = `
-        <div class="video-wrap ${aspectClass}">
+        <div class="video-wrap" style="padding-top: ${paddingTop}%;">
           <iframe src="https://player.vimeo.com/video/${videoId}"
             frameborder="0"
             allow="autoplay; fullscreen; picture-in-picture"
