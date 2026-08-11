@@ -90,6 +90,18 @@ nav a:hover {
   font-weight: 600;
 }
 
+.category-section {
+  margin-bottom: 50px;
+}
+
+.category-title {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  color: #3a362f;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
