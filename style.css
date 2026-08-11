@@ -97,6 +97,14 @@ nav a:hover {
   align-items: start;
 }
 
+.loading-msg {
+  color: #7a7266;
+  font-size: 0.95rem;
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px 0;
+}
+
 .project-card {
   background: #efe9df;
   border-radius: 24px;
