@@ -9,59 +9,80 @@ async function loadPortfolioVideos() {
     }
 
     const data = await res.json();
-    const videos = data.videos || [];
+    const categories = data.categories || [];
 
-    if (videos.length === 0) {
+    if (categories.length === 0) {
       grid.innerHTML = "<p class=\"loading-msg\">No videos found.</p>";
       return;
     }
 
     grid.innerHTML = "";
 
-    videos.forEach((video) => {
-      const videoId = video.id;
-      const width = video.width || 16;
-      const height = video.height || 9;
-      const paddingTop = (height / width) * 100;
+    categories.forEach((category) => {
+      const section = document.createElement("div");
+      section.className = "category-section";
 
-      const title = video.name || "Untitled project";
-      const description = video.description
-        ? video.description.slice(0, 140)
-        : "Short project description goes here.";
+      const heading = document.createElement("h3");
+      heading.className = "category-title";
+      heading.textContent = category.name;
+      section.appendChild(heading);
 
-      const playerParams = "title=0&byline=0&portrait=0&dnt=1";
+      const categoryGrid = document.createElement("div");
+      categoryGrid.className = "grid";
 
-      const card = document.createElement("article");
-      card.className = "project-card";
-      card.innerHTML = `
-        <div class="video-wrap" style="padding-top: ${paddingTop}%;">
-          <iframe src="https://player.vimeo.com/video/${videoId}?${playerParams}"
-            frameborder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowfullscreen></iframe>
-        </div>
-        <div class="card-body">
-          <h3>${title}</h3>
-          <p>${description}</p>
-        </div>
-      `;
-      grid.appendChild(card);
+      category.videos.forEach((video) => {
+        const videoId = video.id;
+        const width = video.width || 16;
+        const height = video.height || 9;
+        const paddingTop = (height / width) * 100;
+
+        const title = video.name || "Untitled project";
+        const description = video.description
+          ? video.description.slice(0, 140)
+          : "Short project description goes here.";
+
+        const playerParams = "title=0&byline=0&portrait=0&dnt=1";
+
+        const card = document.createElement("article");
+        card.className = "project-card";
+        card.innerHTML = `
+          <div class="video-wrap" style="padding-top: ${paddingTop}%;">
+            <iframe src="https://player.vimeo.com/video/${videoId}?${playerParams}"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <div class="card-body">
+            <h3>${title}</h3>
+            <p>${description}</p>
+          </div>
+        `;
+        categoryGrid.appendChild(card);
+      });
+
+      section.appendChild(categoryGrid);
+      grid.appendChild(section);
     });
 
-    layoutMasonry();
-    window.addEventListener("resize", debounce(layoutMasonry, 150));
+    layoutAllMasonry();
+    window.addEventListener("resize", debounce(layoutAllMasonry, 150));
   } catch (err) {
     console.error(err);
     grid.innerHTML = `<p class="loading-msg">Could not load videos.</p>`;
   }
 }
 
-function layoutMasonry() {
-  const grid = document.getElementById("work-grid");
+function layoutAllMasonry() {
+  document.querySelectorAll(".category-section .grid").forEach((g) => {
+    layoutMasonry(g);
+  });
+}
+
+function layoutMasonry(gridEl) {
   const rowHeight = 8;
   const rowGap = 24;
 
-  const cards = grid.querySelectorAll(".project-card");
+  const cards = gridEl.querySelectorAll(".project-card");
   cards.forEach((card) => {
     card.style.gridRowEnd = "span 1";
   });
