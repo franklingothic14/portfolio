@@ -65,6 +65,9 @@ async function loadPortfolioVideos() {
     });
 
     layoutAllMasonry();
+    setTimeout(layoutAllMasonry, 300);
+    setTimeout(layoutAllMasonry, 1000);
+    window.addEventListener("load", layoutAllMasonry);
     window.addEventListener("resize", debounce(layoutAllMasonry, 150));
   } catch (err) {
     console.error(err);
@@ -81,16 +84,17 @@ function layoutAllMasonry() {
 function layoutMasonry(gridEl) {
   const rowHeight = 8;
   const rowGap = 24;
+  const safetyBuffer = 2;
 
   const cards = gridEl.querySelectorAll(".project-card");
   cards.forEach((card) => {
-    card.style.gridRowEnd = "span 1";
+    card.style.gridRowEnd = "";
   });
 
   requestAnimationFrame(() => {
     cards.forEach((card) => {
-      const contentHeight = card.getBoundingClientRect().height;
-      const rowSpan = Math.ceil((contentHeight + rowGap) / (rowHeight + rowGap));
+      const contentHeight = card.scrollHeight;
+      const rowSpan = Math.ceil((contentHeight + rowGap) / (rowHeight + rowGap)) + safetyBuffer;
       card.style.gridRowEnd = `span ${rowSpan}`;
     });
   });
