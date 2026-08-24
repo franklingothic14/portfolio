@@ -1,69 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portfolio — Roman Skrypnyk</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio | Motion Designer</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Підключення моноширинного шрифту для технічного вигляду -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<header class="site-header">
-  <div class="container header-inner">
-    <h1 class="logo">Roman Skrypnyk</h1>
-    <nav>
-      <a href="#work">Work</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </div>
-</header>
+  <!-- Фонова сітка для технічного дизайну -->
+  <div class="grid-background"></div>
 
-<section class="hero">
-  <div class="container">
+  <header class="site-header">
+    <div class="container header-inner">
+      <h1 class="logo">[ PORTFOLIO ]</h1>
+      <nav>
+        <a href="#work">WORK</a>
+        <a href="#about">ABOUT</a>
+        <a href="#experience">EXPERIENCE</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero container">
     <div class="hero-card">
-      <h2>Communication Motion Designer</h2>
+      <div class="crosshair top-left"></div>
+      <div class="crosshair bottom-right"></div>
+      <h2>COMMUNICATION MOTION DESIGNER</h2>
       <p>Blending storytelling with motion — from advertising and mobile games to documentaries and NGO campaigns.</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="work" class="work container">
-  <h2 class="section-title">Selected Work</h2>
-  <div id="work-grid" class="grid">
-    <p class="loading-msg">Loading videos…</p>
-  </div>
-</section>
+  <section id="work" class="work container">
+    <div class="section-header">
+      <h2 class="section-title">01 // SELECTED_WORK</h2>
+      <div class="line"></div>
+    </div>
 
-<section id="about" class="about container">
-  <h2 class="section-title">About</h2>
-  <div class="soft-card">
-    <p>Communication Motion Designer with a background in multimedia journalism, infographics, and video production. Over the years I've created explainer videos, social media animations, and performance-driven ad creatives for NGOs, advertising agencies, and mobile game studios, while also directing and editing short documentary stories about people and everyday life.</p>
-    <p>Comfortable across the full motion design pipeline — from concept and storyboarding to final animation — using After Effects, Premiere Pro, Illustrator, Photoshop, and Figma. Fluent in Ukrainian, English, and German.</p>
-  </div>
-</section>
+    <div id="work-grid" class="grid-container">
+      <p class="loading-msg">INITIALIZING VIDEO FEED...</p>
+    </div>
+  </section>
 
-<section id="contact" class="contact container">
-  <h2 class="section-title">Contact</h2>
-  <div class="soft-card">
-    <p>Email: <a href="mailto:timesnewroman14@gmail.com">timesnewroman14@gmail.com</a></p>
-    <p>Vimeo: <a href="https://vimeo.com/user262005074" target="_blank">vimeo.com/user262005074</a></p>
-    <p>GitHub: <a href="https://github.com/franklingothic14" target="_blank">github.com/franklingothic14</a></p>
-  </div>
-</section>
+  <section id="about" class="about container">
+    <div class="section-header">
+      <h2 class="section-title">02 // SYS_INFO (ABOUT)</h2>
+      <div class="line"></div>
+    </div>
+    <div class="tech-card">
+      <p>Communication Motion Designer with a background in multimedia journalism, infographics, and video production. Over the years I've created explainer videos, social media animations, and performance-driven ad creatives for NGOs, advertising agencies, and mobile game studios, while also directing and editing short documentary stories about people and everyday life.</p>
+      <br>
+      <p>Comfortable across the full motion design pipeline — from concept and storyboarding to final animation — using After Effects, Premiere Pro, Illustrator, Photoshop, and Figma. Fluent in Ukrainian, English, and German.</p>
+    </div>
+  </section>
 
-<footer class="site-footer">
-  <div class="container footer-nav">
-    <span class="nav-icon">&#8962;</span>
-    <span class="nav-icon">&#9679;</span>
-    <span class="nav-icon">&#9822;</span>
-    <span class="nav-icon">&#9776;</span>
-  </div>
-  <div class="container">
-    <p class="copyright">&copy; 2026 Roman Skrypnyk. All rights reserved.</p>
-  </div>
-</footer>
+  <section id="experience" class="experience container">
+    <div class="section-header">
+      <h2 class="section-title">03 // EXPERIENCE_LOG</h2>
+      <div class="line"></div>
+    </div>
+    <div class="tech-card">
+      <p class="accent-text">> AWAITING_CV_DATA...</p>
+      <!-- Сюди потім додасте досвід -->
+    </div>
+  </section>
 
-<script src="script.js"></script>
+  <footer class="site-footer container">
+    <div class="footer-line"></div>
+    <div class="footer-content">
+      <p class="copyright">SYS.DATE: 2026 // ALL RIGHTS RESERVED.</p>
+      <div class="contact-links">
+        <a href="mailto:email@example.com">EMAIL</a>
+        <a href="#" target="_blank">VIMEO_CH_01</a>
+        <!-- <a href="#" target="_blank">VIMEO_CH_02</a> -->
+        <a href="#" target="_blank">GITHUB</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>

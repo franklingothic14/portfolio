@@ -1,111 +1,90 @@
+// URL вашого Cloudflare Worker, який ховатиме Vimeo API ключі
+const API_URL = "https://your-cloudflare-worker-url.workers.dev/videos";
+
+// Бажані категорії (папки)
+const TARGET_CATEGORIES = ["ADVERTISING", "NGO", "DOCUMENTARY"];
+
 async function loadPortfolioVideos() {
-  const grid = document.getElementById("work-grid");
+  const gridContainer = document.getElementById("work-grid");
 
   try {
-    const res = await fetch("/.netlify/functions/get-videos");
+    // В майбутньому, якщо буде 2 канали, Cloudflare Worker має збирати відео з обох і віддавати сюди одним масивом.
+    const res = await fetch(API_URL);
 
     if (!res.ok) {
-      throw new Error(`Server error: ${res.status}`);
+      throw new Error(`SYS.ERROR: ${res.status}`);
     }
 
-    const data = await res.json();
-    const categories = data.categories || [];
+    // Очікується, що API повертає масив об'єктів відео
+    // Кожне відео має мати поле .folder або .tags, щоб скрипт міг його відсортувати
+    const videos = await res.json();
 
-    if (categories.length === 0) {
-      grid.innerHTML = "<p class=\"loading-msg\">No videos found.</p>";
+    if (!videos || videos.length === 0) {
+      gridContainer.innerHTML = "<p class=\"loading-msg\">NO_DATA_FOUND</p>";
       return;
     }
 
-    grid.innerHTML = "";
+    gridContainer.innerHTML = ""; // Очищуємо лоадер
 
-    categories.forEach((category) => {
-      const section = document.createElement("div");
-      section.className = "category-section";
+    // Сортуємо відео по категоріях
+    TARGET_CATEGORIES.forEach((categoryName) => {
+      // Фільтруємо відео. Припускаємо, що Cloudflare повертає поле folderName (або адаптуйте під вашу логіку тегів)
+      const categoryVideos = videos.filter(v =>
+        (v.folderName && v.folderName.toUpperCase() === categoryName) ||
+        (v.tags && v.tags.includes(categoryName))
+      );
 
-      const heading = document.createElement("h3");
-      heading.className = "category-title";
-      heading.textContent = category.name;
-      section.appendChild(heading);
+      // Якщо у папці є відео, рендеримо секцію
+      if (categoryVideos.length > 0) {
+        const section = document.createElement("div");
+        section.className = "category-section";
 
-      const categoryGrid = document.createElement("div");
-      categoryGrid.className = "grid";
+        const heading = document.createElement("h3");
+        heading.className = "category-title";
+        heading.textContent = `DIR: /${categoryName}`;
+        section.appendChild(heading);
 
-      category.videos.forEach((video) => {
-        const videoId = video.id;
-        const width = video.width || 16;
-        const height = video.height || 9;
-        const paddingTop = (height / width) * 100;
+        const categoryGrid = document.createElement("div");
+        categoryGrid.className = "grid";
 
-        const title = video.name || "Untitled project";
-        const description = video.description
-          ? video.description.slice(0, 140)
-          : "Short project description goes here.";
+        categoryVideos.forEach((video) => {
+          const videoId = video.id; // ID відео з Vimeo
+          // Стандартні пропорції 16:9
+          const paddingTop = 56.25;
 
-        const playerParams = "title=0&byline=0&portrait=0&dnt=1";
+          const title = video.name || "UNTITLED_FILE";
+          const description = video.description
+            ? video.description.slice(0, 100) + "..."
+            : "No description provided.";
 
-        const card = document.createElement("article");
-        card.className = "project-card";
-        card.innerHTML = `
-          <div class="video-wrap" style="padding-top: ${paddingTop}%;">
-            <iframe src="https://player.vimeo.com/video/${videoId}?${playerParams}"
-              frameborder="0"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowfullscreen></iframe>
-          </div>
-          <div class="card-body">
-            <h3>${title}</h3>
-            <p>${description}</p>
-          </div>
-        `;
-        categoryGrid.appendChild(card);
-      });
+          const playerParams = "title=0&byline=0&portrait=0&color=FF5722";
 
-      section.appendChild(categoryGrid);
-      grid.appendChild(section);
+          const card = document.createElement("article");
+          card.className = "project-card";
+          card.innerHTML = `
+            <div class="video-wrap" style="padding-top: ${paddingTop}%;">
+              <iframe src="https://player.vimeo.com/video/${videoId}?${playerParams}"
+                frameborder="0"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen></iframe>
+            </div>
+            <div class="card-body">
+              <h3>${title}</h3>
+              <p>${description}</p>
+            </div>
+          `;
+          categoryGrid.appendChild(card);
+        });
+
+        section.appendChild(categoryGrid);
+        gridContainer.appendChild(section);
+      }
     });
 
-    layoutAllMasonry();
-    setTimeout(layoutAllMasonry, 300);
-    setTimeout(layoutAllMasonry, 1000);
-    window.addEventListener("load", layoutAllMasonry);
-    window.addEventListener("resize", debounce(layoutAllMasonry, 150));
   } catch (err) {
     console.error(err);
-    grid.innerHTML = `<p class="loading-msg">Could not load videos.</p>`;
+    gridContainer.innerHTML = `<p class="loading-msg" style="color: #FF5722;">[ CONNECTION_FAILED ]</p>`;
   }
-}
-
-function layoutAllMasonry() {
-  document.querySelectorAll(".category-section .grid").forEach((g) => {
-    layoutMasonry(g);
-  });
-}
-
-function layoutMasonry(gridEl) {
-  const rowHeight = 8;
-  const rowGap = 24;
-  const safetyBuffer = 2;
-
-  const cards = gridEl.querySelectorAll(".project-card");
-  cards.forEach((card) => {
-    card.style.gridRowEnd = "";
-  });
-
-  requestAnimationFrame(() => {
-    cards.forEach((card) => {
-      const contentHeight = card.scrollHeight;
-      const rowSpan = Math.ceil((contentHeight + rowGap) / (rowHeight + rowGap)) + safetyBuffer;
-      card.style.gridRowEnd = `span ${rowSpan}`;
-    });
-  });
-}
-
-function debounce(fn, wait) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn.apply(this, args), wait);
-  };
 }
 
 document.addEventListener("DOMContentLoaded", loadPortfolioVideos);
