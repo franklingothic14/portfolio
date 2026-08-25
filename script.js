@@ -1,89 +1,102 @@
-// URL вашого Cloudflare Worker, який ховатиме Vimeo API ключі
-const API_URL = "https://your-cloudflare-worker-url.workers.dev/videos";
-
-// Бажані категорії (папки)
-const TARGET_CATEGORIES = ["ADVERTISING", "NGO", "DOCUMENTARY"];
+const API_URL = "[YOUR_CLOUDFLARE_WORKER_URL]";
+const CATEGORIES = ["[FOLDER_1]", "[FOLDER_2]", "[FOLDER_3]"];
 
 async function loadPortfolioVideos() {
   const gridContainer = document.getElementById("work-grid");
 
   try {
-    // В майбутньому, якщо буде 2 канали, Cloudflare Worker має збирати відео з обох і віддавати сюди одним масивом.
     const res = await fetch(API_URL);
 
     if (!res.ok) {
-      throw new Error(`SYS.ERROR: ${res.status}`);
+      throw new Error(`HTTP Error: ${res.status}`);
     }
 
-    // Очікується, що API повертає масив об'єктів відео
-    // Кожне відео має мати поле .folder або .tags, щоб скрипт міг його відсортувати
     const videos = await res.json();
+    
+    console.log("API Response:", videos);
 
-    if (!videos || videos.length === 0) {
-      gridContainer.innerHTML = "<p class=\"loading-msg\">NO_DATA_FOUND</p>";
+    if (videos.error) {
+      gridContainer.innerHTML = `<p class="loading-msg" style="color: var(--accent);">[ API_ERROR: ${videos.error} ]</p>`;
       return;
     }
 
-    gridContainer.innerHTML = ""; // Очищуємо лоадер
+    if (!videos || videos.length === 0) {
+      gridContainer.innerHTML = '<p class="loading-msg">[ NO_DATA_FOUND ]</p>';
+      return;
+    }
 
-    // Сортуємо відео по категоріях
-    TARGET_CATEGORIES.forEach((categoryName) => {
-      // Фільтруємо відео. Припускаємо, що Cloudflare повертає поле folderName (або адаптуйте під вашу логіку тегів)
-      const categoryVideos = videos.filter(v =>
-        (v.folderName && v.folderName.toUpperCase() === categoryName) ||
-        (v.tags && v.tags.includes(categoryName))
+    gridContainer.innerHTML = ""; 
+    let hasAnyVideoBeenRendered = false;
+
+    CATEGORIES.forEach((catName) => {
+      const categoryVideos = videos.filter(v => 
+        (v.category && v.category === catName) || 
+        (v.tags && v.tags.includes(catName))
       );
 
-      // Якщо у папці є відео, рендеримо секцію
       if (categoryVideos.length > 0) {
+        hasAnyVideoBeenRendered = true;
+
         const section = document.createElement("div");
         section.className = "category-section";
 
         const heading = document.createElement("h3");
         heading.className = "category-title";
-        heading.textContent = `DIR: /${categoryName}`;
+        heading.textContent = `DIR: /${catName}`;
         section.appendChild(heading);
 
-        const categoryGrid = document.createElement("div");
-        categoryGrid.className = "grid";
+        const grid = document.createElement("div");
+        grid.className = "grid";
 
         categoryVideos.forEach((video) => {
-          const videoId = video.id; // ID відео з Vimeo
-          // Стандартні пропорції 16:9
-          const paddingTop = 56.25;
-
-          const title = video.name || "UNTITLED_FILE";
+          const videoId = video.id;
+          const title = video.name || "[UNTITLED_PROJECT]";
           const description = video.description
-            ? video.description.slice(0, 100) + "..."
-            : "No description provided.";
+            ? video.description.slice(0, 120) + "..."
+            : "";
 
-          const playerParams = "title=0&byline=0&portrait=0&color=FF5722";
+          const playerParams = "title=0&byline=0&portrait=0&color=e63946";
 
           const card = document.createElement("article");
           card.className = "project-card";
           card.innerHTML = `
-            <div class="video-wrap" style="padding-top: ${paddingTop}%;">
-              <iframe src="https://player.vimeo.com/video/${videoId}?${playerParams}"
+            <div class="video-wrap" style="padding-top: 56.25%;">
+              <iframe 
+                src="https://player.vimeo.com/video/${videoId}?${playerParams}"
                 frameborder="0"
                 allow="autoplay; fullscreen; picture-in-picture"
-                allowfullscreen></iframe>
+                allowfullscreen>
+              </iframe>
             </div>
             <div class="card-body">
               <h3>${title}</h3>
               <p>${description}</p>
             </div>
           `;
-          categoryGrid.appendChild(card);
+          grid.appendChild(card);
         });
 
-        section.appendChild(categoryGrid);
+        section.appendChild(grid);
         gridContainer.appendChild(section);
       }
     });
 
+    if (!hasAnyVideoBeenRendered) {
+      gridContainer.innerHTML = `
+        <p class="loading-msg" style="color: var(--accent);">
+          [ UNCATEGORIZED_DATA ]<br>
+          [SYS_MSG: NO_VIDEOS_MATCHED_TARGET_FOLDERS]
+        </p>
+      `;
+    }
+
   } catch (err) {
-    console.error(err);
-    gridContainer.innerHTML = `<p class="loading-msg" style="color: #FF5722;">[ CONNECTION_FAILED ]</p>`;
+    console.error("Fetch error:", err);
+    gridContainer.innerHTML = `
+      <p class="loading-msg" style="color: var(--accent);">
+        [ SIGNAL_LOST // CANNOT_CONNECT_TO_API ]
+      </p>
+    `;
   }
 }
 
